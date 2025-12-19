@@ -39,7 +39,10 @@
         .hero-title { font-size: clamp(1.6rem, 3.6vw, 2.4rem); font-weight: 800; margin-bottom: 0.5rem; color: inherit; }
         .hero-lead { font-size: 1.05rem; color: rgba(7,17,39,0.8); margin-bottom: 1rem; max-width: 780px; margin-left:auto; margin-right:auto; }
         .hero-actions .btn { display:inline-block; padding: 0.8rem 1.2rem; border-radius: 8px; text-decoration:none; font-weight:700; }
+        .hero-actions .btn + .btn { margin-left: 0.6rem; }
         .btn-primary { background: #2b6cff; color: white; box-shadow: 0 6px 20px rgba(43,108,255,0.15); }
+        .btn-outline { background: transparent; border: 1px solid rgba(43,108,255,0.14); color: #2b6cff; box-shadow: none; }
+        .btn-outline:hover { background: rgba(43,108,255,0.06); }
 
         /* Stats section */
         .hero-stats {
@@ -380,6 +383,7 @@
             <p class="hero-lead">Adopting a shelter dog brings companionship, saves lives, and lets you welcome a unique personality into your home, often for less than the cost of buying. Pets from shelters are typically vaccinated, spayed/neutered, and matched to your family so you get a loving, healthy companion.</p>
             <div class="hero-actions">
                 <a href="#stats" class="btn btn-primary">See the Perks</a>
+                <a href="#hero-stats" class="btn btn-outline">See Statistics</a>
             </div>
         </div>
     </header> 
