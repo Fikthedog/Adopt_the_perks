@@ -62,8 +62,6 @@
         }
         .stats-wrap { max-width: 1100px; margin: 0 auto; }
         .stats-grid { display:grid; grid-template-columns: repeat(3,1fr); gap:1.25rem; align-items:stretch; }
-        /* Single-card snap variant (used for percent card) */
-        .hero-stats.is-snap-single .stat-card { max-width: 640px; margin: 0 auto; }
         .stat-card { background: #fff; border-radius: 12px; padding: 1.25rem; text-align:center; box-shadow: 0 6px 20px rgba(12,24,48,0.06); border:1px solid rgba(12,24,48,0.04); }
         .stat-icon { font-size:1.8rem; margin-bottom:0.5rem; display:inline-block; }
         .stat-head { font-size:1rem; font-weight:700; margin-bottom: 0.5rem; color: #08102a; }
@@ -401,30 +399,18 @@
             <div class="stat-number" data-target="5800000">0</div>
             <p class="stat-desc"><a href="https://www.shelteranimalscount.org/explore-the-data/statistics-2024" target="_blank" rel="noopener">~5,800,000 per year</a></p>
           </div>
-
-
-        </div>
-      </div>
-    </section>
-
-    <section id="adopted-snap" class="hero-stats is-snap-single" aria-labelledby="adopted-heading">
-      <div class="container stats-wrap">
-        <div class="stat-card">
-          <div class="stat-icon" aria-hidden="true"></div>
-          <h4 class="stat-head" id="adopted-heading">Total dogs adopted annually</h4>
-          <div class="stat-number" data-target="2000000">0</div>
-          <p class="stat-desc"><a href="https://www.aspca.org/helping-people-pets/shelter-intake-and-surrender" target="_blank" rel="noopener">~2,000,000 per year</a></p>
-        </div>
-      </div>
-    </section>
-
-    <section id="percent-snap" class="hero-stats is-snap-single" aria-labelledby="percent-heading">
-      <div class="container stats-wrap">
-        <div class="stat-card">
-          <div class="stat-icon" aria-hidden="true"></div>
-          <h4 class="stat-head" id="percent-heading">Percent Adopted (vs breeders)</h4>
-          <div class="stat-number" data-target="28" data-format="percent">0%</div>
-          <p class="stat-desc"><a href="https://www.psychologytoday.com/us/blog/fellow-creatures/202501/where-do-people-get-their-dogs-from" target="_blank" rel="noopener">~28% adopted vs ~22% breeders</a></p>
+          <div class="stat-card">
+            <div class="stat-icon" aria-hidden="true"></div>
+            <h4 class="stat-head">Total Dogs Adopted Annually</h4>
+            <div class="stat-number" data-target="2000000">0</div>
+            <p class="stat-desc"><a href="https://www.aspca.org/helping-people-pets/shelter-intake-and-surrender" target="_blank" rel="noopener">~2,000,000 per year</a></p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" aria-hidden="true"></div>
+            <h4 class="stat-head">Percent Adopted (owners)</h4>
+            <div class="stat-number" data-target="28" data-format="percent">0%</div>
+            <p class="stat-desc"><a href="https://www.psychologytoday.com/us/blog/fellow-creatures/202501/where-do-people-get-their-dogs-from" target="_blank" rel="noopener">~28% adopted vs ~22% breeders</a></p>
+          </div>
         </div>
       </div>
     </section>
