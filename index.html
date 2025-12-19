@@ -100,7 +100,7 @@
         .reasons-grid {
             display: flex;
             flex-direction: column;
-            gap: 0; /* cards snap one at a time */
+            gap: 3rem; /* add vertical spacing so cards don't touch */
             align-items: center;
             padding: calc(var(--topbar-height) + 8px) 1rem 4rem 1rem; /* ensure spacing under topbar */
         }
@@ -118,11 +118,12 @@
             position: relative;
             --bg: none;
             --bg-pos: 50%;
-            height: calc(100vh - var(--topbar-height)); /* occupy full available viewport */
+            height: calc(100vh - var(--topbar-height) - 96px); /* slightly shorter so cards are visibly separated */
+            min-height: 380px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 4rem 2rem;
+            padding: 3rem 2rem;
             border-radius: 20px; /* rounded card */
             transition: transform 0.45s cubic-bezier(.2,.9,.2,1), box-shadow 0.45s;
             overflow: hidden;
@@ -134,6 +135,11 @@
             border: 1px solid rgba(255,255,255,0.04);
             backdrop-filter: blur(6px);
             margin: 0 auto; /* center card horizontally */
+        }
+
+        @media (max-width: 860px) {
+            .reasons-grid { gap: 1.25rem; }
+            .reason-card { height: auto; min-height: 360px; padding: 2rem 1rem; }
         }
 
         /* slightly lift the current card */
