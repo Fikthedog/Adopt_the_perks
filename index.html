@@ -32,6 +32,27 @@
             text-align: center;
         }
 
+        /* Hero (light variant) and stats styles */
+        .hero { padding: 3.5rem 1rem; text-align: center; }
+        .hero--light { background: #f7fbff; color: #071127; padding: 3.5rem 1rem; border-radius: 12px; margin: 1.5rem auto 1.75rem; max-width: 1200px; box-shadow: 0 8px 24px rgba(12,24,48,0.08); }
+        .hero .container { max-width: 980px; margin: 0 auto; }
+        .hero-title { font-size: clamp(1.6rem, 3.6vw, 2.4rem); font-weight: 800; margin-bottom: 0.5rem; color: inherit; }
+        .hero-lead { font-size: 1.05rem; color: rgba(7,17,39,0.8); margin-bottom: 1rem; max-width: 780px; margin-left:auto; margin-right:auto; }
+        .hero-actions .btn { display:inline-block; padding: 0.8rem 1.2rem; border-radius: 8px; text-decoration:none; font-weight:700; }
+        .btn-primary { background: #2b6cff; color: white; box-shadow: 0 6px 20px rgba(43,108,255,0.15); }
+
+        /* Stats section */
+        .hero-stats { background: #ffffff; padding: 2rem 1rem 3rem 1rem; border-radius:12px; margin: 0 auto 2rem; max-width: 1200px; box-shadow: 0 6px 22px rgba(12,24,48,0.06); }
+        .stats-wrap { max-width: 1100px; margin: 0 auto; }
+        .stats-grid { display:grid; grid-template-columns: repeat(3,1fr); gap:1.25rem; align-items:stretch; }
+        .stat-card { background: #fff; border-radius: 12px; padding: 1.25rem; text-align:center; box-shadow: 0 6px 20px rgba(12,24,48,0.06); border:1px solid rgba(12,24,48,0.04); }
+        .stat-icon { font-size:1.8rem; margin-bottom:0.5rem; display:inline-block; }
+        .stat-head { font-size:1rem; font-weight:700; margin-bottom: 0.5rem; color: #08102a; }
+        .stat-number { font-size:1.65rem; font-weight:800; color:#10203b; margin-bottom:0.5rem; }
+        .stat-desc a { color:#2b6cff; text-decoration:none; font-size:0.95rem; }
+
+        @media (max-width: 880px) { .stats-grid { grid-template-columns: 1fr; } .hero--light, .hero-stats { margin-left: 1rem; margin-right:1rem;} }
+
         nav {
             background-color: rgba(10,13,22,0.7);
             padding: 1rem;
@@ -325,14 +346,45 @@
     </header>
 
     <!-- Hero -->
-    <header class="hero">
-        <h1>Adopt the Perks</h1>
-        <p class="tagline">Companionship, personality, and purpose—beyond breed.</p>
+    <header class="hero hero--light">
+        <div class="container">
+            <h1 class="hero-title">Why Adopting a Dog Changes Everything</h1>
+            <p class="hero-lead">Adopting a shelter dog brings companionship, saves lives, and lets you welcome a unique personality into your home—often for less than the cost of buying. Pets from shelters are typically vaccinated, spayed/neutered, and matched to your family so you get a loving, healthy companion.</p>
+            <div class="hero-actions">
+                <a href="#stats" class="btn btn-primary">See the Perks</a>
+            </div>
+        </div>
     </header> 
 
     <!-- Pets examples removed -->
     <section id="intro" aria-hidden="false">
         <p style="text-align:center; margin:2rem auto; max-width:900px; color:#444; font-size:1.05rem;">Explore why adopting from shelters matters—scroll down for clear, actionable reasons that show how adoption makes a difference for animals, families, and communities.</p>
+    </section>
+
+    <!-- Hero Stats -->
+    <section id="hero-stats" class="hero-stats">
+      <div class="container stats-wrap">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon" aria-hidden="true">🐶</div>
+            <h4 class="stat-head">Dogs &amp; Cats Entering Shelters</h4>
+            <div class="stat-number" data-target="5800000">0</div>
+            <p class="stat-desc"><a href="https://www.shelteranimalscount.org/explore-the-data/statistics-2024" target="_blank" rel="noopener">~5,800,000 per year</a></p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" aria-hidden="true">🏡</div>
+            <h4 class="stat-head">Dogs Adopted Annually</h4>
+            <div class="stat-number" data-target="2000000">0</div>
+            <p class="stat-desc"><a href="https://www.aspca.org/helping-people-pets/shelter-intake-and-surrender" target="_blank" rel="noopener">~2,000,000 per year</a></p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" aria-hidden="true">📈</div>
+            <h4 class="stat-head">Percent Adopted (vs breeders)</h4>
+            <div class="stat-number" data-target="28" data-format="percent">0%</div>
+            <p class="stat-desc"><a href="https://www.psychologytoday.com/us/blog/fellow-creatures/202501/where-do-people-get-their-dogs-from" target="_blank" rel="noopener">~28% adopted vs ~22% breeders</a></p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Reasons Section -->
@@ -595,6 +647,32 @@
         reveals.forEach(r => centerObserver.observe(r));
       })();
 
+    });
+    </script>
+
+    <script>
+    // Counters: animate numeric stats on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      const animateNumber = (el, target, duration = 1800, isPercent = false) => {
+        const start = 0;
+        const startTime = performance.now();
+        const fmt = n => n.toLocaleString();
+        const tick = (now) => {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const value = Math.floor(progress * (target - start) + start);
+          if (isPercent) el.textContent = `${Math.round(progress * target)}%`; else el.textContent = target >= 1000 ? fmt(value) : value;
+          if (progress < 1) requestAnimationFrame(tick); else if (!isPercent && target >= 1000) el.textContent = fmt(target);
+        };
+        requestAnimationFrame(tick);
+      };
+
+      const counters = Array.from(document.querySelectorAll('.stat-number'));
+      counters.forEach(el => {
+        const target = parseInt(el.getAttribute('data-target'), 10) || 0;
+        const isPercent = el.getAttribute('data-format') === 'percent';
+        animateNumber(el, target, 1800, isPercent);
+      });
     });
     </script>
 </body>
