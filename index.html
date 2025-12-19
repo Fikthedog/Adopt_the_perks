@@ -404,19 +404,19 @@
           <div class="stat-card">
             <div class="stat-icon" aria-hidden="true"></div>
             <h4 class="stat-head">Dogs &amp; Cats Entering Shelters</h4>
-            <div class="stat-number" data-target="5800000">0</div>
+            <div class="stat-number" data-target="5800000" data-approx="true">~0</div>
             <p class="stat-desc"><a href="https://www.shelteranimalscount.org/explore-the-data/statistics-2024" target="_blank" rel="noopener">~5,800,000 per year</a></p>
           </div>
           <div class="stat-card">
             <div class="stat-icon" aria-hidden="true"></div>
             <h4 class="stat-head">Total Dogs Adopted Annually</h4>
-            <div class="stat-number" data-target="2000000">0</div>
+            <div class="stat-number" data-target="2000000" data-approx="true">~0</div>
             <p class="stat-desc"><a href="https://www.aspca.org/helping-people-pets/shelter-intake-and-surrender" target="_blank" rel="noopener">~2,000,000 per year</a></p>
           </div>
           <div class="stat-card">
             <div class="stat-icon" aria-hidden="true"></div>
             <h4 class="stat-head">Percent Adopted (owners)</h4>
-            <div class="stat-number" data-target="28" data-format="percent">0%</div>
+            <div class="stat-number" data-target="28" data-format="percent" data-approx="true">~0%</div>
             <p class="stat-desc"><a href="https://www.psychologytoday.com/us/blog/fellow-creatures/202501/where-do-people-get-their-dogs-from" target="_blank" rel="noopener">~28% adopted vs ~22% breeders</a></p>
           </div>
         </div>
@@ -691,14 +691,15 @@
       const animateNumber = (el, target, duration = 1400, isPercent = false) => {
         const startTime = performance.now();
         const fmt = n => n.toLocaleString();
+        const isApprox = el.getAttribute('data-approx') !== null;
         const tick = (now) => {
           const elapsed = now - startTime;
           const progress = Math.min(elapsed / duration, 1);
           const value = Math.floor(progress * target);
-          if (isPercent) el.textContent = `${Math.round(progress * target)}%`;
-          else el.textContent = target >= 1000 ? fmt(value) : value;
+          if (isPercent) el.textContent = `${isApprox ? '~' : ''}${Math.round(progress * target)}%`;
+          else el.textContent = `${isApprox ? '~' : ''}${target >= 1000 ? fmt(value) : value}`;
           if (progress < 1) requestAnimationFrame(tick);
-          else if (!isPercent && target >= 1000) el.textContent = fmt(target);
+          else if (!isPercent && target >= 1000) el.textContent = `${isApprox ? '~' : ''}${fmt(target)}`;
         };
         requestAnimationFrame(tick);
       };
