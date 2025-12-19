@@ -346,6 +346,18 @@
             .reveal { transition: none !important; }
         }
     </style>
+
+    <!-- Leaflet CSS for map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+      /* Map styles */
+      #shelter-map { height: 420px; border-radius: 12px; width: 100%; margin-top: 1rem; }
+      .map-controls { display:flex; gap:0.5rem; justify-content:center; margin-top:0.75rem; }
+      .map-btn { background: rgba(255,255,255,0.06); color: #eaf2ff; border: 1px solid rgba(255,255,255,0.04); padding:0.5rem 0.85rem; border-radius:8px; font-weight:700; text-decoration:none; cursor:pointer; }
+      .map-btn:hover { background: rgba(255,255,255,0.08); }
+      .map-note { text-align:center; color: rgba(234,242,255,0.78); margin-top:0.5rem; font-size:0.95rem; }
+      @media (max-width: 860px) { #shelter-map { height: 320px; } }
+    </style>
 </head>
 <body>
     <!-- Topbar (modern) -->
@@ -492,9 +504,25 @@
                 <a href="https://www.petfinder.com" target="_blank" class="cta-primary" style="background:#4f7fff; color:white; padding:0.9rem 1.25rem; border-radius:10px;">Search Available Pets Near You</a>
             </div>
         </div>
-    </section> 
+    </section>
 
-    <footer>
+    <!-- Shelters Map Section -->
+    <section id="shelter-locator" class="cta-section" style="padding-top:2rem; padding-bottom:1rem;">
+      <div style="max-width:980px; margin:0 auto; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:1.25rem; border-radius:12px; box-shadow: 0 8px 30px rgba(2,6,23,0.5); border:1px solid rgba(255,255,255,0.02)">
+        <h2 style="margin:0; color:#eaf2ff;">Find Local Shelters</h2>
+        <p class="map-note" id="map-note">Allow location access to see nearby shelters, or search across California.</p>
+
+        <div id="shelter-map" role="region" aria-label="Map of nearby animal shelters"></div>
+
+        <div class="map-controls" aria-hidden="false">
+          <button id="locate-btn" class="map-btn">Use my location</button>
+          <button id="ca-btn" class="map-btn">Show shelters in California</button>
+        </div>
+        <p style="text-align:center; margin-top:0.5rem; color:rgba(234,242,255,0.66); font-size:12px;">Data from OpenStreetMap via Overpass API</p>
+      </div>
+    </section>
+
+    <footer> 
         <p>&copy; 2025 Adopt the Perks. Bringing homes and hearts together.</p>
     </footer>
 
@@ -722,6 +750,165 @@
       const statsBlocks = document.querySelectorAll('.hero-stats');
       statsBlocks.forEach(b => observer.observe(b));
     });
+    </script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+    (function(){
+      const mapEl = document.getElementById('shelter-map');
+      const noteEl = document.getElementById('map-note');
+      let map, markersLayer;
+
+      function initMap(center=[36.7783, -119.4179], zoom=6) {
+        if (map) { map.setView(center, zoom); return; }
+        map = L.map('shelter-map', { center, zoom, scrollWheelZoom: false });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        markersLayer = L.layerGroup().addTo(map);
+      }
+
+      function showMessage(msg) {
+        if (noteEl) noteEl.textContent = msg;
+      }
+
+      function addShelterMarker(lat, lon, props) {
+        const name = props.tags && (props.tags.name || props.tags['operator']) || 'Shelter';
+        const city = props.tags && (props.tags['addr:city'] || props.tags['city'] || '');
+        const street = props.tags && (props.tags['addr:street'] || '');
+        const popup = `<strong>${escapeHtml(name)}</strong>${street ? '<br/>'+escapeHtml(street) : ''}${city ? '<br/>'+escapeHtml(city) : ''}`;
+        L.marker([lat, lon]).bindPopup(popup).addTo(markersLayer);
+      }
+
+      function escapeHtml(s) { return String(s||'').replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[m]; }); }
+
+      function fitToMarkers() {
+        const group = markersLayer;
+        if (!group || !group.getLayers().length) return;
+        const bounds = group.getBounds();
+        map.fitBounds(bounds.pad(0.25), { maxZoom: 14 });
+      }
+
+      async function queryOverpassForCoords(lat, lon, radius = 20000) {
+        showMessage('Searching for shelters near you…');
+        const q = `[out:json][timeout:25];
+        (
+          node["amenity"="animal_shelter"](around:${radius},${lat},${lon});
+          way["amenity"="animal_shelter"](around:${radius},${lat},${lon});
+          relation["amenity"="animal_shelter"](around:${radius},${lat},${lon});
+        );
+        out center;`;
+        try {
+          const res = await fetch('https://overpass-api.de/api/interpreter', { method:'POST', body: q });
+          if (!res.ok) throw new Error('Overpass query failed');
+          const data = await res.json();
+          markersLayer.clearLayers();
+          if (!data.elements || !data.elements.length) {
+            showMessage('No shelters found nearby. Showing broader area.');
+            return false;
+          }
+          data.elements.forEach(el => {
+            const latlon = el.type === 'node' ? [el.lat, el.lon] : (el.center ? [el.center.lat, el.center.lon] : null);
+            if (latlon) addShelterMarker(latlon[0], latlon[1], el);
+          });
+          fitToMarkers();
+          showMessage(`Found ${data.elements.length} shelters.`);
+          return true;
+        } catch (err) {
+          console.error(err);
+          showMessage('Error searching shelters. Try again or use the California view.');
+          return false;
+        }
+      }
+
+      async function queryCalifornia() {
+        showMessage('Searching shelters across California (may take a few seconds)…');
+        const south = 32.5, west = -124.5, north = 42.0, east = -114.1;
+        const q = `[out:json][timeout:60];
+        (
+          node["amenity"="animal_shelter"](${south},${west},${north},${east});
+          way["amenity"="animal_shelter"](${south},${west},${north},${east});
+          relation["amenity"="animal_shelter"](${south},${west},${north},${east});
+        );
+        out center;`;
+        try {
+          const res = await fetch('https://overpass-api.de/api/interpreter', { method:'POST', body: q });
+          if (!res.ok) throw new Error('Overpass query failed');
+          const data = await res.json();
+          markersLayer.clearLayers();
+          if (!data.elements || !data.elements.length) {
+            showMessage('No shelters found in California.');
+            return;
+          }
+          data.elements.forEach(el => {
+            const latlon = el.type === 'node' ? [el.lat, el.lon] : (el.center ? [el.center.lat, el.center.lon] : null);
+            if (latlon) addShelterMarker(latlon[0], latlon[1], el);
+          });
+          fitToMarkers();
+          showMessage(`Found ${data.elements.length} shelters in California.`);
+        } catch (err) {
+          console.error(err);
+          showMessage('Error querying California shelters. Please try again later.');
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        initMap();
+        const locateBtn = document.getElementById('locate-btn');
+        const caBtn = document.getElementById('ca-btn');
+
+        if (locateBtn) {
+          locateBtn.addEventListener('click', () => {
+            if (!navigator.geolocation) {
+              showMessage('Geolocation not supported by your browser.');
+              return;
+            }
+            showMessage('Requesting location permission…');
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+              const lat = pos.coords.latitude, lon = pos.coords.longitude;
+              initMap([lat, lon], 12);
+              const found = await queryOverpassForCoords(lat, lon);
+              if (!found) { map.setView([lat, lon], 10); }
+            }, (err) => {
+              console.warn(err);
+              showMessage('Location access denied or unavailable. You can view shelters across California instead.');
+            }, { enableHighAccuracy: true, maximumAge: 60000, timeout: 20000 });
+          });
+        }
+
+        if (caBtn) {
+          caBtn.addEventListener('click', () => {
+            initMap([36.7783, -119.4179], 6);
+            queryCalifornia();
+          });
+        }
+
+        // Auto-call locate on first visit to prompt user (do not spams)
+        // Try navigator.permissions to avoid re-prompting if denied
+        (async function tryAutoLocate(){
+          if (!navigator.geolocation) return;
+          try {
+            // check permission state if supported
+            if (navigator.permissions) {
+              const p = await navigator.permissions.query({name:'geolocation'});
+              if (p.state === 'granted') {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                  const lat = pos.coords.latitude, lon = pos.coords.longitude;
+                  initMap([lat, lon], 12);
+                  await queryOverpassForCoords(lat, lon);
+                }, () => { /* ignore */ });
+              } else if (p.state === 'prompt') {
+                // politely ask user by not auto-calling; leave it to button.
+              }
+            }
+          } catch(e) {}
+        })();
+      });
+
+    })();
     </script>
 </body>
 </html>
