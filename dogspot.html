@@ -48,10 +48,21 @@
         .stat-card { background: #fff; border-radius: 12px; padding: 1.25rem; text-align:center; box-shadow: 0 6px 20px rgba(12,24,48,0.06); border:1px solid rgba(12,24,48,0.04); }
         .stat-icon { font-size:1.8rem; margin-bottom:0.5rem; display:inline-block; }
         .stat-head { font-size:1rem; font-weight:700; margin-bottom: 0.5rem; color: #08102a; }
-        .stat-number { font-size:1.65rem; font-weight:800; color:#10203b; margin-bottom:0.5rem; }
+        .stat-number { font-size:1.65rem; font-weight:800; color:#10203b; margin-bottom:0.5rem; transform: translateY(8px); opacity: 0; transition: transform 600ms cubic-bezier(.2,.9,.2,1), opacity 420ms ease; display:inline-block; }
+        .stat-number.animate { transform: translateY(0); opacity: 1; }
         .stat-desc a { color:#2b6cff; text-decoration:none; font-size:0.95rem; }
 
         @media (max-width: 880px) { .stats-grid { grid-template-columns: 1fr; } .hero--light, .hero-stats { margin-left: 1rem; margin-right:1rem;} }
+
+        /* Dark mode overrides for hero & stats */
+        @media (prefers-color-scheme: dark) {
+          .hero--light { background: linear-gradient(180deg,#061024,#071127); color: #eaf2ff; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
+          .hero-lead { color: rgba(234,242,255,0.85); }
+          .hero-stats { background: linear-gradient(180deg,#07101a,#05060a); color: #eaf2ff; box-shadow: 0 8px 30px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.02); }
+          .stat-card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.03); color: #eaf2ff; box-shadow: none; }
+          .stat-head, .stat-number, .stat-desc a { color: #eaf2ff; }
+          .stat-desc a { color: #7fb0ff; }
+        }
 
         nav {
             background-color: rgba(10,13,22,0.7);
@@ -651,28 +662,42 @@
     </script>
 
     <script>
-    // Counters: animate numeric stats on page load
+    // Counters: animate numeric stats when scrolled into view
     document.addEventListener('DOMContentLoaded', () => {
-      const animateNumber = (el, target, duration = 1800, isPercent = false) => {
-        const start = 0;
+      const animateNumber = (el, target, duration = 1500, isPercent = false) => {
         const startTime = performance.now();
         const fmt = n => n.toLocaleString();
         const tick = (now) => {
           const elapsed = now - startTime;
           const progress = Math.min(elapsed / duration, 1);
-          const value = Math.floor(progress * (target - start) + start);
-          if (isPercent) el.textContent = `${Math.round(progress * target)}%`; else el.textContent = target >= 1000 ? fmt(value) : value;
-          if (progress < 1) requestAnimationFrame(tick); else if (!isPercent && target >= 1000) el.textContent = fmt(target);
+          const value = Math.floor(progress * target);
+          if (isPercent) el.textContent = `${Math.round(progress * target)}%`;
+          else el.textContent = target >= 1000 ? fmt(value) : value;
+          if (progress < 1) requestAnimationFrame(tick);
+          else if (!isPercent && target >= 1000) el.textContent = fmt(target);
         };
         requestAnimationFrame(tick);
       };
 
       const counters = Array.from(document.querySelectorAll('.stat-number'));
-      counters.forEach(el => {
-        const target = parseInt(el.getAttribute('data-target'), 10) || 0;
-        const isPercent = el.getAttribute('data-format') === 'percent';
-        animateNumber(el, target, 1800, isPercent);
-      });
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target;
+          if (el.dataset.animated) return;
+          el.dataset.animated = 'true';
+          const target = parseInt(el.getAttribute('data-target'), 10) || 0;
+          const isPercent = el.getAttribute('data-format') === 'percent';
+          const idx = counters.indexOf(el);
+          setTimeout(() => {
+            el.classList.add('animate');
+            animateNumber(el, target, 1500, isPercent);
+          }, Math.min(200 * idx, 600));
+          obs.unobserve(el);
+        });
+      }, { threshold: 0.35 });
+
+      counters.forEach(el => observer.observe(el));
     });
     </script>
 </body>
