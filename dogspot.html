@@ -21,6 +21,8 @@
             scroll-behavior: smooth;
             scroll-snap-type: y mandatory;
             overflow-x: hidden;
+            /* Paw cursor (data URI SVG). Fallback to auto if unsupported */
+            cursor: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='6.5' cy='6' r='2.2' fill='%2310203b'/%3E%3Ccircle cx='10.5' cy='3.8' r='2.2' fill='%2310203b'/%3E%3Ccircle cx='14.5' cy='6' r='2.2' fill='%2310203b'/%3E%3Cellipse cx='12' cy='15' rx='6' ry='5' fill='%2310203b'/%3E%3C/svg%3E") 12 12, auto;
         }
 
         :root { --topbar-height: 80px; }
